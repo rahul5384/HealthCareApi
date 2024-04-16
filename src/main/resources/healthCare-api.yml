@@ -1,0 +1,1005 @@
+openapi: 3.0.3
+info:
+  title: HEALTH CARE API
+  description: 'HealthCare System API'
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1
+tags:
+  - name: System
+    description: System resources
+  - name: User
+    description: HealthCare users
+  - name: Admin
+    description: HealthCare Admin
+  - name: Health
+    description: HealthCare
+  - name: Notification
+    description: HealthCare Appointments and Medication Reminders
+security:
+  - M2MAuth: []
+
+paths:
+
+  /versions:
+    get:
+      tags:
+        - System
+      summary: Provide application information
+      operationId: getVersion
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Version"
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+  /users/register:
+    post:
+      tags:
+        - User
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+      responses:
+            201:
+              description: User registered successfully
+              headers:
+                Location:
+                  required: true
+                  schema:
+                    type: string
+                    format: Url
+                  description: Url to the newly created adjustment
+    
+  /users/login:
+    post:
+      tags:
+        - User
+      summary: Authenticate user credentials and generate a token
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+            201:
+              description: User authenticated successfully
+              headers:
+                Location:
+                  required: true
+                  schema:
+                    type: string
+                    format: Url
+
+  /users/{userId}:
+    get:
+      tags:
+        - User 
+      summary: Get user profile information
+      operationId: getUserProfile
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      tags:
+        - User 
+      summary: Update user profile
+      operationId: updateUserProfile
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        200:
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        204:
+          description: No content
+        400:
+          description: Bad request
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          description: Adjustment not found   
+     
+
+  /users/forgot-password:
+    post:
+      tags:
+        - User 
+      summary: Request to reset forgotten password
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPassword"
+      responses:
+        200:
+          description: Password reset request sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResetPassword"                                           
+
+  /users/reset-password:
+    post:
+      tags:
+        - User 
+      summary: Reset user's password
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPassword"
+      responses:
+        200:
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResetPassword"        
+
+  /health-records/{userId}:
+    get:
+      tags:
+        - Health 
+      summary: Get all health records of a user
+      operationId: getAllHealthRecords
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Health records retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthRecordsResponse"        
+
+  /health-records/{userId}/{recordId}:
+    get:
+      tags:
+        - Health 
+      summary: Get a specific health record of a user
+      operationId: getHealthRecord
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Health record retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthRecord"
+
+  /users/{userId}/details:
+    get:
+      tags:
+        - User 
+      summary: Get details of a specific user
+      operationId: getUserDetails
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"            
+
+  # /users/login-endpoint:
+  #     post:
+  #       tags:
+  #         - User 
+  #       summary: User login
+  #       operationId: loginUser
+  #       requestBody:
+  #         required: true
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/LoginRequest"
+  #       responses:
+  #         200:
+  #           description: User login successful
+  #           content:
+  #             application/json:
+  #               schema:
+  #                 $ref: "#/components/schemas/LoginResponse"          
+  /admin/appointments/{appointmentId}:
+    put:
+      tags:
+        - Admin
+      summary: Update appointment details
+      operationId: updateAppointmentDetails
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAppointmentDetailsRequest"
+      responses:
+        200:
+          description: Appointment details updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateAppointmentDetailsResponse"
+    delete:
+      tags:
+        - Admin 
+      summary: Delete an appointment
+      operationId: deleteAppointment
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Appointment deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteAppointmentResponse"        
+
+  /admin/providers:
+    get:
+      tags:
+        - Admin 
+      summary: Get all healthcare providers
+      operationId: getAllProviders
+      responses:
+        200:
+          description: Healthcare providers retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProvidersResponse"        
+          
+  /admin/providers/{providerId}:
+    get:
+      tags:
+        - Admin 
+      summary: Get details of a specific provider
+      operationId: getProviderDetails
+      parameters:
+        - name: providerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Provider details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProviderDetailsResponse"
+    put:
+      tags:
+        - Admin 
+      summary: Update provider details
+      operationId: updateProviderDetails
+      parameters:
+        - name: providerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProviderDetailsRequest"
+      responses:
+        200:
+          description: Provider details updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateProviderDetailsResponse"
+    delete:
+      tags:
+        - Admin 
+      summary: Delete a provider
+      operationId: deleteProvider
+      parameters:
+        - name: providerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Provider deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteProviderResponse"        
+          
+  /notifications/appointment-reminders:
+    post:
+      tags:
+        - Notification 
+      summary: Send appointment reminders to users
+      operationId: sendAppointmentReminders
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppointmentRemindersRequest"
+      responses:
+        200:
+          description: Appointment reminders sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppointmentRemindersResponse"        
+
+  /notifications/medication-reminders:
+    post:
+      tags:
+        - Notification 
+      summary: Send medication reminders to users
+      operationId: sendMedicationReminders
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MedicationRemindersRequest"
+      responses:
+        200:
+          description: Medication reminders sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MedicationRemindersResponse"        
+  /health-records:
+    post:
+      tags:
+        - Health 
+      summary: Create a new health record
+      description: |
+        This endpoint allows you to create a new health record.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthRecord'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthRecord'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+  /health-records/{recordId}:
+    put:
+      tags:
+        - Health       
+      summary: Update an existing health record
+      description: |
+        This endpoint allows you to update an existing health record.
+      parameters:
+        - name: recordId
+          in: path
+          description: The ID of the health record to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthRecord'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthRecord'
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+    delete:
+      tags:
+        - Health 
+      summary: Delete a health record
+      description: |
+        This endpoint allows you to delete a health record.
+      parameters:
+        - name: recordId
+          in: path
+          description: The ID of the health record to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /admin/appointments:
+    get:
+      tags:
+        - Admin
+      summary: Get all appointments
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+  
+  /api/admin/appointments/{appointmentId}:
+      get:
+        tags:
+          - Admin
+        summary: Get details of a specific appointment
+        parameters:
+          - name: appointmentId
+            in: path
+            required: true
+            description: ID of the appointment
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Successful response
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Appointment'
+  /admin/users:
+    get:
+      tags:
+        - Admin
+      summary: Get all users
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+  /admin/{userId}:
+      get:
+        tags:
+          - Admin
+        summary: Get details of a specific user
+        parameters:
+          - name: userId
+            in: path
+            required: true
+            description: ID of the user
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Successful response
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/User'
+      put:
+        tags:
+          - Admin
+        summary: Update user details
+        parameters:
+          - name: userId
+            in: path
+            required: true
+            description: ID of the user
+            schema:
+              type: string
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        responses:
+          '200':
+            description: Successful response
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/User'
+      delete:
+        tags:
+          - Admin
+        summary: Delete a user
+        parameters:
+          - name: userId
+            in: path
+            required: true
+            description: ID of the user
+            schema:
+              type: string
+        responses:
+          '204':
+            description: Successful response
+  /chatbot/messages:
+    post:
+      tags:
+        - Chatbot
+      summary: Send a message to the chatbot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+  /chatbot/conversations/{userId}:
+    get:
+      tags:
+        - Chatbot
+      summary: Get chat history for a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+  /appointments:
+    post:
+      tags:
+        - Appointments
+      summary: Book a new appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Appointment'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+    get:
+      tags:
+        - Appointments
+      summary: Get all appointments
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+  /appointments/{appointmentId}:
+      get:
+        tags:
+          - Appointments
+        summary: Get details of a specific appointment
+        parameters:
+          - name: appointmentId
+            in: path
+            required: true
+            description: ID of the appointment
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Successful response
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Appointment'
+      put:
+        tags:
+          - Appointments
+        summary: Update an existing appointment
+        parameters:
+          - name: appointmentId
+            in: path
+            required: true
+            description: ID of the appointment
+            schema:
+              type: string
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        responses:
+          '200':
+            description: Successful response
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Appointment'
+      delete:
+        tags:
+          - Appointments
+        summary: Cancel an appointment
+        parameters:
+          - name: appointmentId
+            in: path
+            required: true
+            description: ID of the appointment
+            schema:
+              type: string
+        responses:
+          '204':
+            description: Successful response
+
+components:
+  securitySchemes:
+    M2MAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+
+  schemas:       
+    Version:
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+
+    AppointmentsResponse:
+      type: object
+      properties:
+        appointments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Appointment"
+
+    AppointmentDetailsResponse:
+      type: object
+      properties:
+        appointmentId:
+          type: string
+        appointmentDate:
+          type: string
+        provider:
+          $ref: "#/components/schemas/Provider"
+
+    UpdateAppointmentDetailsRequest:
+      type: object
+      properties:
+        appointmentId:
+          type: string
+        appointmentDate:
+          type: string
+        providerId:
+          type: string
+
+    UpdateAppointmentDetailsResponse:
+      type: object
+      properties:
+        appointmentId:
+          type: string
+        appointmentDate:
+          type: string
+        provider:
+          $ref: "#/components/schemas/Provider"
+
+    DeleteAppointmentResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    ProvidersResponse:
+      type: object
+      properties:
+        providers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Provider"
+
+    ProviderDetailsResponse:
+      type: object
+      properties:
+        providerId:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        phoneNumber:
+          type: string
+
+    UpdateProviderDetailsRequest:
+      type: object
+      properties:
+        providerId:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        phoneNumber:
+          type: string
+
+    UpdateProviderDetailsResponse:
+      type: object
+      properties:
+        providerId:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        phoneNumber:
+          type: string
+
+    DeleteProviderResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    AppointmentRemindersRequest:
+      type: object
+      properties:
+        appointmentId:
+          type: string
+        reminderTime:
+          type: string
+
+    AppointmentRemindersResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    MedicationRemindersRequest:
+      type: object
+      properties:
+        medicationId:
+          type: string
+        reminderTime:
+          type: string
+
+    MedicationRemindersResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    Appointment:
+      type: object
+      properties:
+        appointmentId:
+          type: string
+        appointmentDate:
+          type: string
+        provider:
+          $ref: "#/components/schemas/Provider"
+
+    Provider:
+      type: object
+      properties:
+        providerId:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        phoneNumber:
+          type: string
+
+    HealthRecordsResponse:
+      type: object
+      properties:
+        records:
+          type: array
+          items:
+            type: object
+            properties:
+              recordId:
+                type: string
+              patientId:
+                type: string
+              doctorId:
+                type: string
+              diagnosis:
+                type: string
+              treatment:
+                type: string   
+    
+    ResetPassword:
+      type: object
+      properties:
+        message:
+          type: string
+
+    User:
+      type: object
+      properties:
+        userId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        password:
+          type: string
+    
+    UserLogin:
+      type: object
+      properties:
+        userId:
+          type: string
+        token:
+          type: string
+        message:
+          type: string
+        password:
+          type: string
+
+    HealthRecord:
+      type: object
+      properties:
+        recordId:
+          type: string
+        name:
+          type: string
+        date:
+          type: string
+        patientId:
+          type: string
+        doctorId:
+          type: string
+        diagnosis:
+          type: string
+        treatment:
+          type: string
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        userId:
+          type: string
+    
+    Conversation:
+      type: object
+      properties:
+        conversationId:
+          type: string
+        userId:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    Role:
+      type: object
+      properties:
+        roleId:
+          type: string
+        roleName:
+          type: string
+
+    UserRoles:
+      type: object
+      properties:
+        userRoleId:
+          type: string
+        userId:
+          type: string
+        roleId:
+          type: string

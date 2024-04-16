@@ -1,0 +1,177 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.rahul.healthcare</groupId>
+    <artifactId>healthCareApi</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  
+  <artifactId>healthcare-angular-client</artifactId>
+  
+  <properties>
+    <gen.directory>${project.build.directory}/generated-sources/swagger</gen.directory>
+    <lib.version>1.1.0</lib.version>
+  </properties>
+  
+  <dependencies>
+    <dependency>
+        <groupId>io.swagger.codegen.v3</groupId>
+        <artifactId>swagger-codegen-maven-plugin</artifactId>
+        <version>3.0.34</version>
+    </dependency>
+  </dependencies>
+  
+    <build>
+    <plugins>
+      <plugin>
+        <groupId>io.swagger.codegen.v3</groupId>
+        <artifactId>swagger-codegen-maven-plugin</artifactId>
+        <version>3.0.34</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <language>typescript-angular</language>
+              <inputSpec>${project.parent.basedir}/src/main/resources/healthCare-api.yml</inputSpec>
+              <!-- <output>${gen.folder}</output> -->
+              <modelPackage>com.rahul.healthCareApi.api.dto</modelPackage>
+              <apiPackage>com.rahul.healthCareApi.api</apiPackage>
+              <invokerPackage>com.rahul.healthCareApi.api</invokerPackage>
+               <modelNameSuffix>Dto</modelNameSuffix> 
+              <generateApis>true</generateApis>
+              <generateApiTests>false</generateApiTests>
+              <generateApiDocumentation>false</generateApiDocumentation>
+              <generateModels>true</generateModels>
+              <generateModelTests>false</generateModelTests>
+              <generateModelDocumentation>false</generateModelDocumentation>
+              <generateSupportingFiles>true</generateSupportingFiles>
+
+              <configOptions>
+               <npmName>@rahul/HealthCare.${project.artifactId}</npmName>
+               <!--<npmName>health-care-system-ui</npmName>-->
+                <npmVersion>${lib.version}-${version.timestamp}</npmVersion>
+                <!-- <npmRepository></npmRepository> -->
+                <ngVersion>14.0.5</ngVersion>
+              </configOptions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>1.9.1</version>
+        <configuration>
+          <nodeVersion>v14.17.6</nodeVersion>
+          <npmVersion>6.14.15</npmVersion>
+          <installDirectory>${project.build.directory}</installDirectory>
+          <!--<workingDirectory>C:\Rahul\Spring_Personal_Projects\HealthCareSystemUI</workingDirectory>-->
+          <!-- optional: where to download node and npm from. Defaults to https://nodejs.org/dist/ -->
+          <!-- <downloadRoot>http://myproxy.example.org/nodejs/</downloadRoot> -->
+        </configuration>
+        <executions>
+          <execution>
+              <!-- optional: you don't really need execution ids, but it looks nice in your build log. -->
+              <id>install node and npm</id>
+              <goals>
+                  <goal>install-node-and-npm</goal>
+              </goals>
+              <!-- optional: default phase is "generate-resources" -->
+              <phase>initialize</phase>
+          </execution>
+
+          <!-- Workaround for build issue of last version of @types/node -->
+          <execution>
+            <id>npm update @types/node</id>
+            <goals>
+                <goal>npm</goal>
+            </goals>
+            <phase>process-sources</phase>
+            <configuration>
+              <workingDirectory>${gen.directory}</workingDirectory>
+              <arguments>install @types/node@18.13.0 --save-dev</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>npm install</id>
+            <goals>
+                <goal>npm</goal>
+            </goals>
+            <!-- optional: default phase is "generate-resources" -->
+            <phase>generate-resources</phase>
+            <configuration>
+              <workingDirectory>${gen.directory}</workingDirectory>
+              <arguments>install</arguments>
+            </configuration>
+          </execution>
+          
+         <execution>
+            <id>Lib build</id>
+            <goals>
+                <goal>npm</goal>
+            </goals>
+            <!-- optional: default phase is "generate-resources" -->
+           <phase>compile</phase>
+            <configuration>
+              <workingDirectory>${gen.directory}</workingDirectory>
+              <arguments>run build</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>Lib package</id>
+            <goals>
+                <goal>npm</goal>
+            </goals>
+            <!-- optional: default phase is "generate-resources" -->
+            <phase>package</phase>
+            <configuration>
+              <workingDirectory>${gen.directory}/dist</workingDirectory>
+              <arguments>pack</arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>timestamp-property</id>
+                <goals>
+                  <goal>timestamp-property</goal>
+                </goals>
+                <configuration>
+                  <name>version.timestamp</name>
+                  <pattern>YYYYMMddHHmmssSSS</pattern>
+                  <unit>millisecond</unit>
+                </configuration>
+              </execution>
+                <execution>
+                    <id>attach-artifacts</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>attach-artifact</goal>
+                    </goals>
+                    <configuration>
+                        <artifacts>
+                            <artifact>
+                                <file>${gen.directory}/dist/rahul-healthCare.${project.artifactId}-${lib.version}-${version.timestamp}.tgz</file>
+                                <!--<file>location of angular artifact</file>-->
+                                <type>tgz</type>
+                            </artifact>
+                        </artifacts>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+  </build>
+
+</project>
